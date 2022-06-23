@@ -1,0 +1,19 @@
+/* Load players.csv */
+playersCSV = LOAD '/user/maria_dev/diplomacy/players.csv'
+USING org.apache.pig.piggybank.storage.CSVExcelStorage(',') 
+AS
+(id:int,
+country:chararray,
+won:int,
+num_supply_centers:int,
+eliminated:int,
+start_turn:int,
+end_turn:int);
+
+/* Make a list how many times every country won */
+playersFiltered = FILTER playersCSV BY won == 1;
+playersPart = FOREACH playersFiltered GENERATE country, won;
+playersGrouped = GROUP playersPart BY country;
+playersCount = FOREACH playersGrouped GENERATE group as country, COUNT($1);
+
+DUMP playersCount;

@@ -1,0 +1,39 @@
+/* Load players.csv */
+playersCSV = LOAD '/user/maria_dev/diplomacy/players.csv'
+/* Delete double quotes */
+USING org.apache.pig.piggybank.storage.CSVExcelStorage(',') 
+AS
+(game_id:int,
+country:chararray,
+won:int,
+num_supply_centers:int,
+eliminated:int,
+start_turn:int,
+end_turn:int);
+
+/* Load games.csv */
+gamesCSV = LOAD '/user/maria_dev/diplomacy/games.csv'
+USING org.apache.pig.piggybank.storage.CSVExcelStorage(',') 
+AS
+(game_id:int,
+num_turns:int,
+num_players:int);
+
+/* Make a list from the top 10 countries that had the most turns and won the game */
+playersFiltered = FILTER playersCSV BY won == 1;
+gamesPlayers = JOIN playersFiltered BY game_id, gamesCSV BY game_id;
+gamesPlayersOrdered = ORDER gamesPlayers BY num_turns DESC;
+gamesPlayersOrderedLimit = LIMIT gamesPlayersOrdered 10;
+/* Names had to be the full name and not the index */
+gamesPlayersFinal = FOREACH gamesPlayersOrderedLimit GENERATE (CASE country
+        WHEN 'A' THEN 'Austria'
+        WHEN 'E' THEN 'England'
+        WHEN 'F' THEN 'France'
+        WHEN 'I' THEN 'Italy'
+        WHEN 'G' THEN 'Germany'
+        WHEN 'R' THEN 'Russia'
+        WHEN 'T' THEN 'Turkey'
+		ELSE 'Unknown'
+	END) AS country, num_turns;
+
+DUMP gamesPlayersFinal;

@@ -1,0 +1,6 @@
+SELECT mn.name, count(mn.name) as ratingCount
+FROM ratings r
+INNER JOIN movie_names mn ON mn.movie_id = r.movie_id
+GROUP BY mn.name
+ORDER BY ratingCount 
+DESC;
